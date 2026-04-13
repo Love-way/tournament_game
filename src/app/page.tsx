@@ -247,10 +247,10 @@ export default function Home() {
         {/* Right — stats + countdown */}
         <div className="hero-right" style={{ position:'relative', zIndex:1 }}>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'1px', background:'var(--border)', border:'1px solid var(--border)', borderRadius:8, overflow:'hidden', width:'100%', maxWidth:300, backdropFilter:'blur(10px)', backgroundColor:'rgba(10,10,10,0.7)' }}>
-            <StatBox value={playerCount}       label="Inscrits"  orange />
-            <StatBox value={matchCount || '—'} label="À jouer" />
-            <StatBox value={doneCount  || '—'} label="Terminés" />
-            <StatBox value={started ? 'LIVE' : 'OPEN'} label="Statut" orange={started} />
+            <StatBox value={playerCount}                    label="Inscrits"  orange />
+            <StatBox value={Math.max(0, 16 - playerCount)}  label="Places restantes" />
+            <StatBox value={matchCount || '—'}              label="À jouer" />
+            <StatBox value={started ? 'LIVE' : playerCount >= 16 ? 'FULL' : 'OPEN'} label="Statut" orange={started || playerCount >= 16} />
           </div>
 
           {!started && (

@@ -25,6 +25,11 @@ export const add = mutation({
       throw new Error('Les inscriptions sont fermées, le tournoi a déjà démarré.');
     }
 
+    const allPlayers = await ctx.db.query('players').collect();
+    if (allPlayers.length >= 16) {
+      throw new Error('Les inscriptions sont complètes. Les 16 places sont prises !');
+    }
+
     const existing = await ctx.db
       .query('players')
       .filter((q) => q.eq(q.field('pseudo'), pseudo))

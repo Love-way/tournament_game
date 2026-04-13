@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../../convex/_generated/api';
 import NeymarWelcome from '@/components/NeymarWelcome';
-import { playRegistrationMelody, playClickSound } from '@/lib/sounds';
+import { playGoalSound } from '@/lib/sounds';
 import Link from 'next/link';
 
 const GAMES   = ['FIFA','eFootball','Rocket League','Valorant','Mortal Kombat','Street Fighter','Call of Duty','Fortnite','NBA 2K','Tekken'];
@@ -35,13 +35,13 @@ export default function RegisterPage() {
     setError('');
     const t = pseudo.trim();
     if (t.length < 2 || t.length > 20) { setError('Le pseudo doit faire entre 2 et 20 caractères.'); return; }
-    setLoading(true); playClickSound();
+    setLoading(true); ;
     try {
       const avatar = AVATARS[Math.floor(Math.random() * AVATARS.length)];
       await addPlayer({ pseudo: t, game, avatar });
       setRegPlayer({ pseudo: t, game, avatar });
       setSuccess(true); setShowNeymar(true);
-      playRegistrationMelody(); setPseudo('');
+      playGoalSound(); setPseudo('');
     } catch(err: any) {
       setError(err.message ?? "Erreur lors de l'inscription.");
     } finally { setLoading(false); }
@@ -51,13 +51,13 @@ export default function RegisterPage() {
     <>
       <nav className="nav">
         <div className="container" style={{ display:'flex', alignItems:'center', gap:'1rem', width:'100%' }}>
-          <Link href="/" style={{ textDecoration:'none' }} onClick={playClickSound}>
+          <Link href="/" style={{ textDecoration:'none' }}>
             <span style={{ fontFamily:'Bebas Neue, cursive', fontSize:'1.35rem', color:'var(--white)', letterSpacing:'0.05em' }}>
               OMSHINA <span style={{ color:'var(--orange)' }}>TOURNOI ZONE</span>
             </span>
           </Link>
           <div style={{ flex:1 }} />
-          <Link href="/" className="btn btn-outline" style={{ padding:'7px 16px', fontSize:'0.78rem' }} onClick={playClickSound}>
+          <Link href="/" className="btn btn-outline" style={{ padding:'7px 16px', fontSize:'0.78rem' }}>
             ← Retour
           </Link>
         </div>
@@ -96,7 +96,7 @@ export default function RegisterPage() {
                   <button onClick={() => { setSuccess(false); setShowNeymar(false); }} className="btn btn-outline" style={{ padding:'10px 20px' }}>
                     Inscrire un autre joueur
                   </button>
-                  <Link href="/" className="btn btn-primary" style={{ padding:'10px 20px' }} onClick={playClickSound}>
+                  <Link href="/" className="btn btn-primary" style={{ padding:'10px 20px' }}>
                     Voir le tournoi →
                   </Link>
                 </div>
@@ -125,7 +125,7 @@ export default function RegisterPage() {
                       const sel = g === game;
                       return (
                         <button key={g} type="button"
-                          onClick={() => { setGame(g); playClickSound(); }}
+                          onClick={() => { setGame(g); ; }}
                           style={{
                             padding:'8px 12px', borderRadius:4, cursor:'pointer',
                             border:`1px solid ${sel ? c : 'var(--border)'}`,

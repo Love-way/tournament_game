@@ -1,101 +1,72 @@
 let ctx: AudioContext | null = null;
 
 function getCtx(): AudioContext {
-  if (!ctx) {
-    ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-  }
+  if (!ctx) ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
   return ctx;
 }
 
-/* ─── Whistle (page load) ─── */
-export function playWhistle() {
+/* ─── Goal celebration (used on registration success) ─── */
+export function playGoalSound() {
   try {
     const c = getCtx();
-    const osc = c.createOscillator();
-    const gain = c.createGain();
-    osc.connect(gain);
-    gain.connect(c.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(900, c.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(1800, c.currentTime + 0.08);
-    osc.frequency.exponentialRampToValueAtTime(1400, c.currentTime + 0.25);
-    osc.frequency.exponentialRampToValueAtTime(1800, c.currentTime + 0.4);
-    gain.gain.setValueAtTime(0.35, c.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.01, c.currentTime + 0.6);
-    osc.start(c.currentTime);
-    osc.stop(c.currentTime + 0.6);
-  } catch (_) {}
-}
 
-/* ─── Registration melody (ascending scale) ─── */
-export function playRegistrationMelody() {
-  try {
-    const c = getCtx();
-    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5 E5 G5 C6
-    notes.forEach((freq, i) => {
+    // 1. Crowd roar — filtered white noise that swells
+    const bufLen = Math.floor(c.sampleRate * 2.5);
+    const buf    = c.createBuffer(1, bufLen, c.sampleRate);
+    const data   = buf.getChannelData(0);
+    for (let i = 0; i < bufLen; i++) data[i] = Math.random() * 2 - 1;
+
+    const noise = c.createBufferSource();
+    noise.buffer = buf;
+
+    const filter = c.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.value = 600;
+    filter.Q.value = 0.4;
+
+    const noiseGain = c.createGain();
+    noiseGain.gain.setValueAtTime(0, c.currentTime);
+    noiseGain.gain.linearRampToValueAtTime(0.35, c.currentTime + 0.25);
+    noiseGain.gain.linearRampToValueAtTime(0.55, c.currentTime + 0.8);
+    noiseGain.gain.linearRampToValueAtTime(0.15, c.currentTime + 2.5);
+
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(c.destination);
+    noise.start(c.currentTime);
+    noise.stop(c.currentTime + 2.5);
+
+    // 2. Referee whistle
+    const w = c.createOscillator();
+    const wg = c.createGain();
+    w.type = 'sine';
+    w.frequency.setValueAtTime(1500, c.currentTime);
+    w.frequency.linearRampToValueAtTime(1900, c.currentTime + 0.12);
+    w.frequency.linearRampToValueAtTime(1700, c.currentTime + 0.28);
+    wg.gain.setValueAtTime(0.4, c.currentTime);
+    wg.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.35);
+    w.connect(wg); wg.connect(c.destination);
+    w.start(c.currentTime); w.stop(c.currentTime + 0.35);
+
+    // 3. Celebration ascending melody
+    const melody = [523, 659, 784, 880, 1047];
+    melody.forEach((freq, i) => {
       const osc = c.createOscillator();
       const gain = c.createGain();
-      osc.connect(gain);
-      gain.connect(c.destination);
       osc.type = 'sine';
-      const t = c.currentTime + i * 0.13;
-      osc.frequency.setValueAtTime(freq, t);
+      osc.frequency.value = freq;
+      const t = c.currentTime + 0.3 + i * 0.13;
       gain.gain.setValueAtTime(0, t);
-      gain.gain.linearRampToValueAtTime(0.3, t + 0.04);
-      gain.gain.exponentialRampToValueAtTime(0.01, t + 0.22);
-      osc.start(t);
-      osc.stop(t + 0.25);
+      gain.gain.linearRampToValueAtTime(0.28, t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.28);
+      osc.connect(gain); gain.connect(c.destination);
+      osc.start(t); osc.stop(t + 0.3);
     });
   } catch (_) {}
 }
 
-/* ─── Button click ─── */
-export function playClickSound() {
-  try {
-    const c = getCtx();
-    const osc = c.createOscillator();
-    const gain = c.createGain();
-    osc.connect(gain);
-    gain.connect(c.destination);
-    osc.type = 'square';
-    osc.frequency.setValueAtTime(520, c.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(200, c.currentTime + 0.08);
-    gain.gain.setValueAtTime(0.15, c.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.1);
-    osc.start(c.currentTime);
-    osc.stop(c.currentTime + 0.12);
-  } catch (_) {}
-}
-
-/* ─── Champion fanfare ─── */
-export function playChampionFanfare() {
-  try {
-    const c = getCtx();
-    const melody = [
-      { f: 523.25, t: 0, d: 0.18 },
-      { f: 523.25, t: 0.18, d: 0.18 },
-      { f: 523.25, t: 0.36, d: 0.18 },
-      { f: 523.25, t: 0.54, d: 0.35 },
-      { f: 415.3,  t: 0.54, d: 0.35 },
-      { f: 659.25, t: 0.9, d: 0.35 },
-      { f: 523.25, t: 1.25, d: 0.35 },
-      { f: 659.25, t: 1.6, d: 0.35 },
-      { f: 783.99, t: 1.95, d: 0.8 },
-      { f: 1046.5, t: 2.75, d: 1.0 },
-    ];
-    melody.forEach(({ f, t, d }) => {
-      const osc = c.createOscillator();
-      const gain = c.createGain();
-      osc.connect(gain);
-      gain.connect(c.destination);
-      osc.type = 'sawtooth';
-      const start = c.currentTime + t;
-      osc.frequency.setValueAtTime(f, start);
-      gain.gain.setValueAtTime(0, start);
-      gain.gain.linearRampToValueAtTime(0.25, start + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.01, start + d);
-      osc.start(start);
-      osc.stop(start + d + 0.05);
-    });
-  } catch (_) {}
-}
+/* kept as alias so existing imports don't break */
+export const playRegistrationMelody = playGoalSound;
+export function playClickSound() {}
+export function playWhistle() {}
+export function playChampionFanfare() {}

@@ -1,0 +1,297 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:ital,opsz,wght@0,14..32,400..900;1,14..32,400..900&display=swap');
+
+@font-face {
+  font-family: 'Brush King';
+  src: url('/fonts/BrushKing.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ════════════════════════════════════════
+   DESIGN TOKENS
+════════════════════════════════════════ */
+:root {
+  --black:       #0A0A0A;
+  --black-1:     #111111;
+  --black-2:     #141414;
+  --border:      #1E1E1E;
+  --border-soft: #161616;
+
+  --orange:        #FF6B00;
+  --orange-dark:   #E55A00;
+  --orange-subtle: rgba(255, 107, 0, 0.10);
+
+  --gold: #FFD700;
+
+  --white:   #FFFFFF;
+  --gray-1:  #E5E5E5;
+  --gray-2:  #888888;
+  --gray-3:  #444444;
+
+  --radius:    6px;
+  --radius-sm: 4px;
+}
+
+/* ════════════════════════════════════════
+   RESET + BASE
+════════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--black);
+  color: var(--gray-1);
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+
+/* ════════════════════════════════════════
+   LAYOUT
+════════════════════════════════════════ */
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 1.25rem;
+}
+
+/* ════════════════════════════════════════
+   NAV
+════════════════════════════════════════ */
+.nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 100;
+  background: rgba(10, 10, 10, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(255, 107, 0, 0.12);
+  height: 60px;
+  display: flex;
+  align-items: center;
+}
+
+/* ════════════════════════════════════════
+   TABS
+════════════════════════════════════════ */
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  padding: 10px 18px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--gray-2);
+  transition: color 0.15s, border-color 0.15s;
+  margin-bottom: -1px;
+}
+.tab-btn[data-active="true"] {
+  color: var(--white);
+  border-bottom-color: var(--orange);
+}
+.tab-btn:hover { color: var(--gray-1); }
+
+/* ════════════════════════════════════════
+   BUTTONS
+════════════════════════════════════════ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s, transform 0.12s;
+  white-space: nowrap;
+  text-decoration: none;
+}
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: var(--orange);
+  color: #fff;
+}
+.btn-primary:hover { background: var(--orange-dark); }
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--gray-2);
+}
+.btn-outline:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+.btn-gold {
+  background: var(--gold);
+  color: #0A0A0A;
+  font-weight: 700;
+}
+.btn-gold:hover { opacity: 0.88; }
+
+.btn-danger {
+  background: rgba(239, 68, 68, 0.06);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  color: #F87171;
+}
+.btn-danger:hover { background: rgba(239, 68, 68, 0.12); }
+
+/* ════════════════════════════════════════
+   INPUTS
+════════════════════════════════════════ */
+.input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  color: var(--gray-1);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.88rem;
+  transition: border-color 0.15s;
+  outline: none;
+}
+.input:focus {
+  border-color: var(--orange);
+}
+.input::placeholder { color: var(--gray-3); }
+select.input option { background: #111; color: var(--gray-1); }
+
+/* ════════════════════════════════════════
+   SECTION HEADER
+════════════════════════════════════════ */
+.section-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 1.1rem;
+}
+.section-head .label {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  font-size: 1rem;
+  color: var(--white);
+}
+.section-head .pill {
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 0.65rem;
+  background: var(--orange-subtle);
+  border: 1px solid rgba(255, 107, 0, 0.2);
+  color: var(--orange);
+  padding: 2px 8px;
+  border-radius: 99px;
+  letter-spacing: 0.06em;
+}
+.section-head::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* ════════════════════════════════════════
+   ADMIN PANEL
+════════════════════════════════════════ */
+.admin-panel {
+  background: rgba(255, 107, 0, 0.02);
+  border: 1px solid rgba(255, 107, 0, 0.1);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+}
+
+/* ════════════════════════════════════════
+   ERROR BOX
+════════════════════════════════════════ */
+.error-box {
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  color: #FCA5A5;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.82rem;
+}
+
+/* ════════════════════════════════════════
+   NEYMAR ANIMATION
+════════════════════════════════════════ */
+@keyframes neymar-up {
+  0%   { transform: translateY(120%) translateX(-50%); opacity: 0; }
+  10%  { opacity: 1; }
+  75%  { transform: translateY(0) translateX(-50%);    opacity: 1; }
+  90%  { transform: translateY(0) translateX(-50%);    opacity: 1; }
+  100% { transform: translateY(130%) translateX(-50%); opacity: 0; }
+}
+.neymar-container {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  z-index: 1000;
+  animation: neymar-up 4.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes wave-arm {
+  0%   { transform: rotate(0deg); }
+  35%  { transform: rotate(-48deg); }
+  65%  { transform: rotate(-8deg); }
+  90%  { transform: rotate(-55deg); }
+  100% { transform: rotate(0deg); }
+}
+.arm-wave { transform-origin: top center; animation: wave-arm 0.6s ease-in-out infinite; }
+
+@keyframes orbit {
+  from { transform: rotate(0deg) translateX(22px) rotate(0deg); }
+  to   { transform: rotate(360deg) translateX(22px) rotate(-360deg); }
+}
+.spinning-ball { animation: orbit 1.8s linear infinite; transform-origin: center; }
+
+/* ════════════════════════════════════════
+   CONFETTI
+════════════════════════════════════════ */
+@keyframes confetti-fall {
+  0%   { transform: translateY(-20px) rotate(0deg) scale(1); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(540deg) scale(0.4); opacity: 0; }
+}
+.confetti-piece {
+  position: fixed; top: -20px;
+  animation: confetti-fall linear forwards;
+  z-index: 1001; pointer-events: none;
+}
+
+/* ════════════════════════════════════════
+   CHAMPION SCREEN
+════════════════════════════════════════ */
+@keyframes gold-particle {
+  0%   { transform: translateY(0) translateX(0) scale(1); opacity: 1; }
+  100% { transform: translateY(-220px) translateX(var(--tx)) scale(0); opacity: 0; }
+}
+@keyframes champ-pop {
+  from { transform: scale(0.6) translateY(20px); opacity: 0; }
+  to   { transform: scale(1) translateY(0);       opacity: 1; }
+}
+.champion-modal { animation: champ-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* ════════════════════════════════════════
+   FADE UP
+════════════════════════════════════════ */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fade-up 0.35s ease forwards; }

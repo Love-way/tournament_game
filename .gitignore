@@ -1,0 +1,8 @@
+
+.env.local
+
+# Fonts (trop lourds pour GitHub)
+public/fonts/
+node_modules/
+.next/
+.env

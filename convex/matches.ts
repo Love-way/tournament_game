@@ -94,9 +94,13 @@ export const setWinner = mutation({
     const match = await ctx.db.get(args.matchId);
     if (!match) return;
 
+    const oldWinnerId = match.winnerId;
+    const winnerChanged = oldWinnerId && oldWinnerId !== args.winnerId;
+
+    // Set the new winner
     await ctx.db.patch(args.matchId, { winnerId: args.winnerId });
 
-    // Find next round match and update it
+    // Find next round match and update the player slot
     const nextRound = match.round + 1;
     const nextMatchIndex = Math.floor(match.matchIndex / 2);
     const isSlot1 = match.matchIndex % 2 === 0;
@@ -120,25 +124,25 @@ export const setWinner = mutation({
       await ctx.db.patch(nextMatch._id, { player2Id: args.winnerId });
     }
 
-    // Auto-advance if next match now has one player but other slot has no feeder
-    const updated = await ctx.db.get(nextMatch._id);
-    if (!updated) return;
-    if (updated.player1Id && !updated.player2Id) {
-      // Check if there's a round match that could provide player2
-      const otherFeederIdx = isSlot1 ? match.matchIndex + 1 : match.matchIndex - 1;
-      const otherFeeder = await ctx.db
-        .query('matches')
-        .filter((q) =>
-          q.and(
-            q.eq(q.field('round'), match.round),
-            q.eq(q.field('matchIndex'), otherFeederIdx),
-            q.eq(q.field('tournamentId'), match.tournamentId)
+    // If winner changed, cascade-clear all subsequent rounds that had the old winner
+    if (winnerChanged) {
+      let curRound = nextRound;
+      let curMatchIndex = nextMatchIndex;
+      while (true) {
+        const m = await ctx.db
+          .query('matches')
+          .filter((q) =>
+            q.and(
+              q.eq(q.field('tournamentId'), match.tournamentId),
+              q.eq(q.field('round'), curRound),
+              q.eq(q.field('matchIndex'), curMatchIndex)
+            )
           )
-        )
-        .first();
-      if (!otherFeeder) {
-        // No other feeder -> auto-advance player1
-        await ctx.db.patch(nextMatch._id, { winnerId: updated.player1Id });
+          .first();
+        if (!m || !m.winnerId) break;
+        await ctx.db.patch(m._id, { winnerId: undefined });
+        curMatchIndex = Math.floor(curMatchIndex / 2);
+        curRound++;
       }
     }
   },

@@ -137,14 +137,14 @@ export default function BracketView({ matches, players, isAdmin, onChampion }: P
                           <PlayerRow
                             player={p1}
                             isWinner={match.winnerId === p1?._id}
-                            clickable={!!(isAdmin && !hasWinner && p1)}
+                            clickable={!!(isAdmin && p1)}
                             onClick={() => p1 && setWin(match._id, p1._id, round)}
                           />
                           <div style={{ height:1, background:'var(--border)' }} />
                           <PlayerRow
                             player={p2}
                             isWinner={match.winnerId === p2?._id}
-                            clickable={!!(isAdmin && !hasWinner && p2)}
+                            clickable={!!(isAdmin && p2)}
                             onClick={() => p2 && setWin(match._id, p2._id, round)}
                           />
                         </div>

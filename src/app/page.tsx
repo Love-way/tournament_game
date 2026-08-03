@@ -26,10 +26,13 @@ const GAME_COLORS: Record<string,string> = {
 };
 
 // Actual filenames in /public — spaces URL-encoded for CSS
-const HERO_IMAGES = ['/hero1.jpg', '/hero2.jpg', '/hero3.jpg'];
+const HERO_IMAGES = ['/hero1.jpg', '/hero2.jpg', '/hero3.jpg', '/hero4.png'];
 
 interface Player   { _id: string; pseudo: string; game: string; avatar: string; joinedAt: number; }
-interface Match    { _id: string; round: number; matchIndex: number; player1Id?: string; player2Id?: string; winnerId?: string; tournamentId: string; }
+interface Match    {
+  _id: string; round: number; matchIndex: number; player1Id?: string; player2Id?: string; winnerId?: string; tournamentId: string;
+  legs?: number; score1Leg1?: number; score2Leg1?: number; score1Leg2?: number; score2Leg2?: number;
+}
 interface Champion { pseudo: string; avatar: string; game: string; }
 
 function roundLabel(round: number, total: number) {
@@ -63,6 +66,7 @@ export default function Home() {
   const [copied,         setCopied]         = useState(false);
   const [activeTab,      setActiveTab]      = useState<'roster'|'bracket'>('roster');
   const [slideIndex,     setSlideIndex]     = useState(0);
+  const [confirmAction,  setConfirmAction]  = useState<{ message: string; danger?: boolean; onConfirm: () => void | Promise<void> } | null>(null);
 
   const titleClicks = useRef(0);
   const clickTimer  = useRef<ReturnType<typeof setTimeout>|null>(null);
@@ -169,7 +173,15 @@ export default function Home() {
           <div style={{ flex:1 }} />
 
           {/* Nav links — hidden on mobile */}
-          <div className="nav-links">
+          <div className="nav-links" style={{ display:'flex', gap:'1.25rem' }}>
+            <button onClick={() => document.getElementById('format')?.scrollIntoView({ behavior:'smooth' })}
+              style={{ background:'none', border:'none', cursor:'pointer', fontFamily:'Inter, sans-serif', fontWeight:500, fontSize:'0.82rem', color:'var(--gray-2)', padding:'4px 0' }}>
+              Format
+            </button>
+            <button onClick={() => document.getElementById('replay')?.scrollIntoView({ behavior:'smooth' })}
+              style={{ background:'none', border:'none', cursor:'pointer', fontFamily:'Inter, sans-serif', fontWeight:500, fontSize:'0.82rem', color:'var(--gray-2)', padding:'4px 0' }}>
+              Replay
+            </button>
             <button onClick={() => document.getElementById('content')?.scrollIntoView({ behavior:'smooth' })}
               style={{ background:'none', border:'none', cursor:'pointer', fontFamily:'Inter, sans-serif', fontWeight:500, fontSize:'0.82rem', color:'var(--gray-2)', padding:'4px 0' }}>
               Joueurs
@@ -295,6 +307,75 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── FORMAT DU TOURNOI ── */}
+      <section id="format" style={{ position:'relative', zIndex:10, padding:'3.5rem 0', borderTop:'1px solid var(--border)', borderBottom:'1px solid var(--border)', background:'rgba(255,255,255,0.01)' }}>
+        <div className="container">
+          <div style={{ marginBottom:'2rem' }}>
+            <div style={{ fontFamily:'Inter, sans-serif', fontWeight:600, fontSize:'0.62rem', color:'var(--orange)', letterSpacing:'0.14em', textTransform:'uppercase', marginBottom:6 }}>
+              Règles officielles
+            </div>
+            <h2 style={{ fontFamily:'Bebas Neue, cursive', fontSize:'clamp(1.8rem,4vw,2.8rem)', color:'var(--white)', letterSpacing:'0.04em', lineHeight:1 }}>
+              FORMAT DU TOURNOI
+            </h2>
+          </div>
+
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(220px, 1fr))', gap:'1rem' }}>
+            <FormatCard
+              stage="8èmes de finale"
+              detail="Match simple"
+              duration="10 min"
+              extra="8 matchs"
+            />
+            <FormatCard
+              stage="Quarts de finale"
+              detail="Aller-retour"
+              duration="7 min / manche"
+              extra="4 confrontations × 2 manches × (7+3) = 80 min"
+            />
+            <FormatCard
+              stage="Demi-finales"
+              detail="Aller-retour"
+              duration="7 min / manche"
+              extra="2 confrontations × 2 manches"
+            />
+            <FormatCard
+              stage="Finale"
+              detail="Confrontation simple"
+              duration="—"
+              extra="1 match pour le titre"
+              gold
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* ── REPLAY ── */}
+      <section id="replay" style={{ position:'relative', zIndex:10, padding:'3.5rem 0', borderBottom:'1px solid var(--border)' }}>
+        <div className="container">
+          <div style={{ marginBottom:'2rem' }}>
+            <div style={{ fontFamily:'Inter, sans-serif', fontWeight:600, fontSize:'0.62rem', color:'var(--orange)', letterSpacing:'0.14em', textTransform:'uppercase', marginBottom:6 }}>
+              Édition précédente
+            </div>
+            <h2 style={{ fontFamily:'Bebas Neue, cursive', fontSize:'clamp(1.8rem,4vw,2.8rem)', color:'var(--white)', letterSpacing:'0.04em', lineHeight:1 }}>
+              REPLAY DU DERNIER TOURNOI
+            </h2>
+          </div>
+
+          <div style={{ display:'flex', justifyContent:'center' }}>
+            <video
+              src="/B1C15E18-C9FB-4EFE-972F-AB4AE52B12BA.mp4"
+              controls
+              playsInline
+              preload="metadata"
+              style={{
+                display:'block', maxWidth:'100%', maxHeight:'75vh', width:'auto', height:'auto',
+                borderRadius:'var(--radius)', border:'1px solid var(--border)', background:'#000',
+              }}
+            />
+          </div>
+        </div>
+      </section>
+
       {/* ── ADMIN PANEL ── */}
       {isAdmin && (
         <div id="admin" style={{ position:'relative', zIndex:10, background:'rgba(255,107,0,0.02)', borderTop:'1px solid rgba(255,107,0,0.12)', borderBottom:'1px solid rgba(255,107,0,0.12)' }}>
@@ -330,10 +411,26 @@ export default function Home() {
                     🚀 Lancer le tournoi ({playerCount} joueurs)
                   </button>
                 )}
+                {started && playerCount >= 2 && (
+                  <button
+                    className="btn btn-outline"
+                    style={{ padding:'11px 20px', fontSize:'0.82rem' }}
+                    onClick={() => setConfirmAction({
+                      message: 'Relancer le tournoi avec un nouveau tirage au sort ? Les mêmes joueurs seront gardés mais tous les résultats actuels seront perdus.',
+                      onConfirm: handleLaunchTournament,
+                    })}
+                  >
+                    🔀 Nouveau tirage
+                  </button>
+                )}
                 <button
                   className="btn btn-danger"
                   style={{ padding:'11px 20px', fontSize:'0.82rem' }}
-                  onClick={async () => { if (confirm('Réinitialiser complètement le tournoi ?')) await resetAll({}); }}
+                  onClick={() => setConfirmAction({
+                    message: 'Réinitialiser complètement le tournoi ? Tous les joueurs et résultats seront supprimés.',
+                    danger: true,
+                    onConfirm: async () => { await resetAll({}); },
+                  })}
                 >
                   ↺ Reset
                 </button>
@@ -402,7 +499,11 @@ export default function Home() {
                         return (
                           <MatchCard key={match._id} p1={p1} p2={p2}
                             round={roundLabel(round, totalRounds)}
-                            hasWinner={!!match.winnerId} winnerId={match.winnerId} />
+                            hasWinner={!!match.winnerId} winnerId={match.winnerId}
+                            legs={match.legs}
+                            agg1={match.score1Leg1 !== undefined && match.score1Leg2 !== undefined ? match.score1Leg1 + match.score1Leg2 : undefined}
+                            agg2={match.score2Leg1 !== undefined && match.score2Leg2 !== undefined ? match.score2Leg1 + match.score2Leg2 : undefined}
+                          />
                         );
                       });
                     })}
@@ -456,6 +557,37 @@ export default function Home() {
         </div>
       )}
 
+      {/* ── CONFIRM MODAL ── */}
+      {confirmAction && (
+        <div
+          style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.88)', backdropFilter:'blur(8px)', zIndex:3000, display:'flex', alignItems:'center', justifyContent:'center', padding:'1rem' }}
+          onClick={e => { if (e.target === e.currentTarget) setConfirmAction(null); }}
+        >
+          <div style={{ background:'var(--black-1)', border:'1px solid var(--border)', borderTop:`2px solid ${confirmAction.danger ? '#F87171' : 'var(--orange)'}`, borderRadius:'var(--radius)', padding:'2rem', width:'100%', maxWidth:380 }}>
+            <h2 style={{ fontFamily:'Bebas Neue, cursive', fontSize:'1.6rem', color:'var(--white)', marginBottom:'0.75rem', letterSpacing:'0.05em' }}>
+              Confirmation
+            </h2>
+            <p style={{ fontFamily:'Inter, sans-serif', fontSize:'0.85rem', color:'var(--gray-2)', lineHeight:1.5, marginBottom:'1.5rem' }}>
+              {confirmAction.message}
+            </p>
+            <div style={{ display:'flex', gap:'0.75rem' }}>
+              <button
+                className="btn btn-outline" style={{ flex:1, padding:'11px', fontSize:'0.85rem' }}
+                onClick={() => setConfirmAction(null)}
+              >
+                Annuler
+              </button>
+              <button
+                className={confirmAction.danger ? 'btn btn-danger' : 'btn btn-primary'} style={{ flex:1, padding:'11px', fontSize:'0.85rem' }}
+                onClick={async () => { const action = confirmAction; setConfirmAction(null); await action.onConfirm(); }}
+              >
+                Confirmer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {neymarPlayer && <NeymarWelcome player={neymarPlayer} onDone={() => setNeymarPlayer(null)} />}
       {champion     && <ChampionScreen champion={champion} onClose={() => setChampion(null)} />}
     </main>
@@ -471,26 +603,53 @@ function StatBox({ value, label, orange }: { value: string|number; label: string
   );
 }
 
-function MatchCard({ p1, p2, round, hasWinner, winnerId }: {
+function FormatCard({ stage, detail, duration, extra, gold }: {
+  stage: string; detail: string; duration: string; extra: string; gold?: boolean;
+}) {
+  return (
+    <div style={{ background:'var(--black-1)', border:`1px solid ${gold ? 'rgba(255,215,0,0.25)' : 'var(--border)'}`, borderRadius:'var(--radius)', padding:'1.25rem 1.1rem' }}>
+      <div style={{ fontFamily:'Bebas Neue, cursive', fontSize:'1.3rem', color: gold ? '#FFD700' : 'var(--orange)', letterSpacing:'0.03em', marginBottom:8 }}>
+        {stage}
+      </div>
+      <div style={{ fontFamily:'Inter, sans-serif', fontWeight:600, fontSize:'0.85rem', color:'var(--white)', marginBottom:4 }}>
+        {detail}
+      </div>
+      <div style={{ fontFamily:'Inter, sans-serif', fontSize:'0.8rem', color:'var(--gray-2)', marginBottom:10 }}>
+        ⏱ {duration}
+      </div>
+      <div style={{ fontFamily:'Inter, sans-serif', fontSize:'0.72rem', color:'var(--gray-3)', paddingTop:10, borderTop:'1px solid var(--border)' }}>
+        {extra}
+      </div>
+    </div>
+  );
+}
+
+function MatchCard({ p1, p2, round, hasWinner, winnerId, legs, agg1, agg2 }: {
   p1?: Player; p2?: Player; round: string; hasWinner: boolean; winnerId?: string;
+  legs?: number; agg1?: number; agg2?: number;
 }) {
   const c1 = p1 ? (GAME_COLORS[p1.game] ?? '#555') : '#333';
   const c2 = p2 ? (GAME_COLORS[p2.game] ?? '#555') : '#333';
+  const isAllerRetour = legs === 2 && !!p1 && !!p2;
+  const aggKnown = agg1 !== undefined && agg2 !== undefined;
   return (
     <div style={{ flexShrink:0, width:210, background:'var(--black-1)', border:`1px solid ${hasWinner ? 'rgba(255,215,0,0.2)' : 'var(--border)'}`, borderRadius:6, overflow:'hidden' }}>
       <div style={{ padding:'5px 10px', borderBottom:'1px solid var(--border)', background:'rgba(255,255,255,0.01)', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-        <span style={{ fontFamily:'Inter, sans-serif', fontSize:'0.58rem', fontWeight:700, color:'var(--gray-3)', letterSpacing:'0.1em', textTransform:'uppercase' }}>{round}</span>
+        <span style={{ fontFamily:'Inter, sans-serif', fontSize:'0.58rem', fontWeight:700, color:'var(--gray-3)', letterSpacing:'0.1em', textTransform:'uppercase' }}>
+          {round}{isAllerRetour ? ' · A/R' : ''}
+        </span>
         {hasWinner ? <span style={{ fontSize:'0.58rem', fontWeight:700, color:'#FFD700' }}>Terminé</span>
-          : p1 && p2 ? <span style={{ fontSize:'0.58rem', fontWeight:700, color:'var(--orange)' }}>À jouer</span>
+          : p1 && p2 ? <span style={{ fontSize:'0.58rem', fontWeight:700, color:'var(--orange)' }}>{isAllerRetour && aggKnown ? 'Égalité' : 'À jouer'}</span>
           : <span style={{ fontSize:'0.58rem', color:'var(--gray-3)' }}>BYE</span>}
       </div>
       <div style={{ padding:'8px 10px', display:'flex', flexDirection:'column', gap:5 }}>
-        {[{ player:p1, color:c1 }, { player:p2, color:c2 }].map(({ player, color }, idx) => (
+        {[{ player:p1, color:c1, agg:agg1 }, { player:p2, color:c2, agg:agg2 }].map(({ player, color, agg }, idx) => (
           <div key={idx} style={{ display:'flex', alignItems:'center', gap:7, padding:'5px 7px', borderRadius:3, borderLeft:`3px solid ${winnerId === player?._id ? '#FFD700' : color + '55'}`, background: winnerId === player?._id ? 'rgba(255,215,0,0.05)' : 'transparent' }}>
             <span style={{ fontSize:'0.95rem', lineHeight:1 }}>{player?.avatar ?? '?'}</span>
             <span style={{ fontFamily:'Inter, sans-serif', fontWeight: winnerId === player?._id ? 700 : 500, fontSize:'0.78rem', color: winnerId === player?._id ? '#FFD700' : 'var(--gray-1)', flex:1, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
               {player?.pseudo ?? 'En attente…'}
             </span>
+            {isAllerRetour && aggKnown && <span style={{ fontFamily:'Inter, sans-serif', fontSize:'0.72rem', fontWeight:700, color:'var(--gray-2)' }}>{agg}</span>}
             {winnerId === player?._id && <span style={{ fontSize:'0.65rem', color:'#FFD700' }}>✓</span>}
           </div>
         ))}

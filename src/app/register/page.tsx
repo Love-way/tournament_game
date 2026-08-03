@@ -18,6 +18,8 @@ const GAME_COLORS: Record<string,string> = {
   'Fortnite':'#9747d4','NBA 2K':'#1d428a','Tekken':'#e8a000',
 };
 
+const PAYMENT_USSD = '*601*14*50526*5200#';
+
 export default function RegisterPage() {
   const tournament  = useQuery(api.tournament.getState);
   const players     = useQuery(api.players.list) as { _id: string }[] | undefined;
@@ -30,6 +32,7 @@ export default function RegisterPage() {
   const [success,    setSuccess]    = useState(false);
   const [showNeymar, setShowNeymar] = useState(false);
   const [regPlayer,  setRegPlayer]  = useState<{pseudo:string;game:string;avatar:string}|null>(null);
+  const [hasPaid,    setHasPaid]    = useState(false);
 
   const playerCount  = players?.length ?? 0;
   const spotsLeft    = Math.max(0, MAX_PLAYERS - playerCount);
@@ -145,7 +148,7 @@ export default function RegisterPage() {
                   Tu joues en tant que <strong style={{ color:'var(--orange)' }}>{regPlayer?.pseudo}</strong> sur <strong style={{ color:'var(--white)' }}>{regPlayer?.game}</strong>
                 </p>
                 <div style={{ display:'flex', gap:'0.5rem', justifyContent:'center', flexWrap:'wrap' }}>
-                  <button onClick={() => { setSuccess(false); setShowNeymar(false); }} className="btn btn-outline" style={{ padding:'10px 20px' }}>
+                  <button onClick={() => { setSuccess(false); setShowNeymar(false); setHasPaid(false); }} className="btn btn-outline" style={{ padding:'10px 20px' }}>
                     Inscrire un autre joueur
                   </button>
                   <Link href="/" className="btn btn-primary" style={{ padding:'10px 20px' }}>
@@ -153,8 +156,41 @@ export default function RegisterPage() {
                   </Link>
                 </div>
               </div>
+            ) : !hasPaid ? (
+              <div style={{ textAlign:'center', padding:'1rem 0' }}>
+                <div style={{ fontSize:'2rem', marginBottom:'1rem' }}>💳</div>
+                <h2 style={{ fontFamily:'Bebas Neue, cursive', fontSize:'1.6rem', color:'var(--white)', marginBottom:'0.5rem', letterSpacing:'0.04em' }}>
+                  Frais d&apos;inscription
+                </h2>
+                <p style={{ fontFamily:'Inter, sans-serif', color:'var(--gray-2)', fontSize:'0.85rem', marginBottom:'1.5rem', lineHeight:1.5 }}>
+                  Avant de t&apos;inscrire, effectue le paiement depuis ton téléphone en composant le code ci-dessous.
+                </p>
+                <a
+                  href={`tel:${encodeURIComponent(PAYMENT_USSD)}`}
+                  className="btn btn-gold"
+                  style={{ padding:'14px 24px', fontSize:'0.95rem', display:'inline-block', textDecoration:'none', marginBottom:'0.6rem' }}
+                >
+                  📞 Payer les frais d&apos;inscription
+                </a>
+                <p style={{ fontFamily:'Inter, sans-serif', color:'var(--gray-3)', fontSize:'0.72rem', marginBottom:'1.75rem' }}>
+                  Code : {PAYMENT_USSD}
+                </p>
+
+                <label style={{ display:'flex', alignItems:'center', gap:8, justifyContent:'center', cursor:'pointer', fontFamily:'Inter, sans-serif', fontSize:'0.82rem', color:'var(--gray-1)' }}>
+                  <input
+                    type="checkbox" checked={hasPaid}
+                    onChange={e => setHasPaid(e.target.checked)}
+                    style={{ width:16, height:16, accentColor:'var(--orange)', cursor:'pointer' }}
+                  />
+                  J&apos;ai effectué le paiement
+                </label>
+              </div>
             ) : (
               <form onSubmit={handleSubmit} style={{ display:'flex', flexDirection:'column', gap:'1.5rem' }}>
+
+                <button type="button" onClick={() => setHasPaid(false)} style={{ background:'none', border:'none', cursor:'pointer', padding:0, alignSelf:'flex-start', fontFamily:'Inter, sans-serif', fontSize:'0.72rem', color:'var(--gray-3)' }}>
+                  ← Revenir au paiement
+                </button>
 
                 <div>
                   <label style={{ display:'block', fontFamily:'Inter, sans-serif', fontWeight:600, fontSize:'0.65rem', color:'var(--orange)', letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:8 }}>
